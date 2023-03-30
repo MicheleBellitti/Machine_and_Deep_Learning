@@ -1,0 +1,6 @@
+numpy
+matplotlib
+scikit-image
+onedrivedownloader
+requests
+sklearn
