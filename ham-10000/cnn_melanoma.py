@@ -1,5 +1,5 @@
 # Import required libraries
-import pandas as pd
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -14,20 +14,18 @@ import os
 import zipfile
 
 # Download the dataset
-url = "https://www.dropbox.com/s/v13ov2tjhgdarab/ham10000_images_part_1.zip?dl=1"
-filename = "ham10000_images_part_1.zip"
-if not os.path.exists(filename):
-    print(f"Downloading {filename}...")
-    urllib.request.urlretrieve(url, filename)
 
-# Extract the dataset
-if not os.path.exists("ham10000_images_part_1"):
+filename = "ham10000_images_part_1.zip"
+
+dir = "$HOME/Documents/ham10000_images_part_1"
+'''# Extract the dataset
+if not os.path.exists(dir):
     print("Extracting files...")
     with zipfile.ZipFile(filename, "r") as zip_ref:
-        zip_ref.extractall()
+        zip_ref.extractall(path='./'+dir)'''
+        
 
-# Define the dataset
-dataset = ImageFolder("ham10000_images_part_1")
+dataset = ImageFolder("$HOME/Documents/ham10000_images_part_1")
 
 
 # Define a neural network model
@@ -85,7 +83,7 @@ transform = transforms.Compose([transforms.Resize((224, 224)),
                                 transforms.ToTensor()])
 
 # Define data loader
-loader = DataLoader(dataset, batch_size=32, shuffle=True)
+loader = DataLoader(dataset, batch_size=64, shuffle=True)
 
 # Initialize model
 model = Net()
@@ -109,13 +107,13 @@ for epoch in range(num_epochs):
 
     print(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {loss.item():.4f}")
 
-# print("Training complete!")
+print("Training complete!")
 
 # Save the model checkpoint
-torch.save(model.state_dict(), "model.ckpt")
+torch.save(model.state_dict(), "ham_model.ckpt")
 
 # Load the model checkpoint
-model.load_state_dict(torch.load("model.ckpt"))
+model.load_state_dict(torch.load("ham_model.ckpt"))
 
 # Make predictions
 model.eval()
