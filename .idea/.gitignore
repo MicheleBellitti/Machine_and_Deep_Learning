@@ -1,3 +1,8 @@
 # Default ignored files
 /shelf/
 /workspace.xml
+/modules.xml
+/misc.xml
+/vcs.xml
+/dbnavigator.xml
+/aws.xml
