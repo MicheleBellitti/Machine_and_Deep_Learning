@@ -1,31 +1,25 @@
 # Import required libraries
 
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
 from torchvision import transforms
-from PIL import Image
-import urllib.request
-import os
-import zipfile
 
-# Download the dataset
+from ham_dataset import Ham10000Dataset
 
 filename = "ham10000_images_part_1.zip"
 
-dir = "$HOME/Documents/ham10000_images_part_1"
-'''# Extract the dataset
-if not os.path.exists(dir):
-    print("Extracting files...")
-    with zipfile.ZipFile(filename, "r") as zip_ref:
-        zip_ref.extractall(path='./'+dir)'''
-        
+DIR = "/Users/miche/Documents/ham10000_images_part1"
 
-dataset = ImageFolder("$HOME/Documents/ham10000_images_part_1")
+data_transforms = transforms.Compose([
+    transforms.Resize((256, 256)),
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomRotation(degrees=15),
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+])
 
 
 # Define a neural network model
@@ -71,19 +65,14 @@ class Net(nn.Module):
 
 
 # Load the dataset
-data_transforms = transforms.Compose([
-    transforms.Resize((256, 256)),
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomRotation(degrees=15),
-    transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-])
 
-transform = transforms.Compose([transforms.Resize((224, 224)),
-                                transforms.ToTensor()])
 
 # Define data loader
-loader = DataLoader(dataset, batch_size=64, shuffle=True)
+csv_file_path = "/Users/miche/PycharmProjects/Machine_and_Deep_Learning/ham-10000/HAM10000_metadata.csv"
+dataset = Ham10000Dataset(dir_path=DIR, csv_file_path=csv_file_path, transform=data_transforms)
+train_dataset, test_dataset = torch.utils.data.random_split(dataset, [0.8, 0.2])
+train_loader = DataLoader(dataset=train_dataset, batch_size=32, shuffle=True)
+test_loader = DataLoader(dataset=test_dataset, batch_size=32, shuffle=False)
 
 # Initialize model
 model = Net()
@@ -95,8 +84,9 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 # Train model
 num_epochs = 10
 for epoch in range(num_epochs):
-    for images, labels in loader:
+    for images, labels in train_loader:
         # Forward pass
+
         outputs = model(images)
         loss = criterion(outputs, labels)
 
@@ -120,13 +110,10 @@ model.eval()
 with torch.no_grad():
     correct = 0
     total = 0
-    for images, labels in loader:
+    for images, labels in test_loader:
         outputs = model(images)
         _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
 
     print(f"Accuracy of the network on the 10000 test images: {100 * correct / total}%")
-
-
-
